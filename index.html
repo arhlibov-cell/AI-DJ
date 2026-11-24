@@ -17,7 +17,6 @@
       --text: #f1f5f9;
       --muted: #94a3b8;
       --green: #1db954;
-      --green-dark: #15803d;
       --blue: #3b82f6;
       --red: #ef4444;
       --amber: #f59e0b;
@@ -120,8 +119,8 @@
     }
     .tabs {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
       background: var(--card);
       padding: 5px;
       border-radius: 12px;
@@ -131,11 +130,12 @@
       background: transparent;
       border: none;
       color: var(--muted);
-      padding: 9px 6px;
+      padding: 9px 4px;
       border-radius: 8px;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
+      white-space: nowrap;
     }
     .tab.active { background: var(--card-2); color: var(--text); }
 
@@ -188,6 +188,53 @@
     .q-info { min-width: 0; flex: 1; }
     .q-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .q-sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Стили для вкладки Табы */
+    .tabs-box {
+      background: #0d1320;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      overflow-x: auto;
+      white-space: pre;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+    .tabs-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .chip {
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #93c5fd;
+    }
+    .ext-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .ext-links a {
+      text-decoration: none;
+      color: var(--text);
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
 
     .modal-backdrop {
       position: fixed; inset: 0;
@@ -246,14 +293,15 @@
     </div>
   </section>
 
-  <!-- Вкладки -->
+  <!-- 4 Вкладки -->
   <div class="tabs">
     <button class="tab active" data-tab="chat">Чат с DJ</button>
     <button class="tab" data-tab="queue">Очередь (<span id="queueCount">0</span>)</button>
     <button class="tab" data-tab="about">О треке</button>
+    <button class="tab" data-tab="guitar">🎸 Табы</button>
   </div>
 
-  <!-- Вкладка: Чат -->
+  <!-- Вкладка 1: Чат -->
   <section id="tab-chat" class="card">
     <div id="chatBox" class="chat-box">
       <div class="msg dj">Привет! Я на связи. Напиши, что поставить — например: «Включи 3 трека Paledusk, а дальше как обычно» или «Сделай бодрый японский рок-сет».</div>
@@ -264,7 +312,7 @@
     </div>
   </section>
 
-  <!-- Вкладка: Очередь -->
+  <!-- Вкладка 2: Очередь -->
   <section id="tab-queue" class="card hidden">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
       <strong style="font-size:14px;">Следующие треки в сете</strong>
@@ -273,13 +321,24 @@
     <div id="queueList" class="hint">Очередь пока пуста. Нажмите START DJ или закажите треки в чате.</div>
   </section>
 
-  <!-- Вкладка: О треке -->
+  <!-- Вкладка 3: О треке -->
   <section id="tab-about" class="card hidden">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
       <strong style="font-size:14px;">История и факты от AI DJ</strong>
       <button id="explainTrackBtn" class="btn btn-sm btn-blue">Рассказать о текущем</button>
     </div>
     <div id="aboutContent" class="hint">Включите трек и нажмите «Рассказать о текущем», чтобы диджей выдал справку о группе, жанре и релизе.</div>
+  </section>
+
+  <!-- Вкладка 4: Табы и аккорды -->
+  <section id="tab-guitar" class="card hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+      <strong style="font-size:14px;">Табулатура и аккорды</strong>
+      <button id="generateTabsBtn" class="btn btn-sm btn-green">🎸 Подобрать для трека</button>
+    </div>
+    <div id="tabsMeta" class="tabs-meta"></div>
+    <div id="tabsContent" class="tabs-box">Включите любой трек в Spotify и нажмите «Подобрать для трека» — AI подберёт строй, аккорды и ASCII-табулатуру основного риффа.</div>
+    <div id="tabsExternalLinks" class="ext-links"></div>
   </section>
 </main>
 
@@ -329,7 +388,7 @@
     libraryTracks: JSON.parse(localStorage.getItem("sp_library_cache") || "[]"),
     queue: [],
     currentTrack: null,
-    chatHistory: []
+    lastTabsTrackId: null
   };
 
   // === DOM ЭЛЕМЕНТЫ ===
@@ -584,6 +643,16 @@
     $("trackTitle").textContent = track.name;
     $("trackArtist").textContent = track.artist;
     $("coverImg").src = track.cover || "icon.png";
+    updateExternalTabLinks(track);
+  }
+
+  function updateExternalTabLinks(track) {
+    if (!track) return;
+    const q = encodeURIComponent(`${track.artist} ${track.name}`);
+    $("tabsExternalLinks").innerHTML = `
+      <a href="https://www.ultimate-guitar.com/search.php?search_type=title&value=${q}" target="_blank" rel="noopener">🔎 Ultimate Guitar</a>
+      <a href="https://www.songsterr.com/?pattern=${q}" target="_blank" rel="noopener">🎵 Songsterr</a>
+    `;
   }
 
   async function pollCurrentPlayback() {
@@ -598,7 +667,7 @@
     } catch (_) {}
   }
 
-  // === ИНТЕГРАЦИЯ С GEMINI API (ПОДДЕРЖКА КЛЮЧЕЙ AQ.Ab8... И AIzaSy...) ===
+  // === УНИВЕРСАЛЬНЫЙ ВЫЗОВ GEMINI API (ДЛЯ НОВЫХ КЛЮЧЕЙ AQ.Ab8... И СТАРЫХ AIzaSy...) ===
   async function callGemini(promptText, systemInstruction = "") {
     const key = (state.geminiKey || "").trim();
     if (!key) {
@@ -607,37 +676,44 @@
 
     const payload = {
       contents: [{ role: "user", parts: [{ text: promptText }] }],
-      generationConfig: {
-        temperature: 0.7
-      }
+      generationConfig: { temperature: 0.7 }
     };
     if (systemInstruction) {
       payload.systemInstruction = { parts: [{ text: systemInstruction }] };
     }
 
-    // Передаём ключ в официальном заголовке x-goog-api-key — это работает и для новых ключей AQ.Ab8..., и для AIzaSy...
-    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": key
-      },
-      body: JSON.stringify(payload)
-    });
+    // Ключи нового образца AQ.Ab8... принимаются через заголовок x-goog-api-key (и поддерживаются для AIzaSy...)
+    const models = ["gemini-2.5-flash", "gemini-2.0-flash"];
+    let lastError = null;
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
+    for (const model of models) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": key
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (reply) return reply;
+        throw new Error("Gemini вернул пустой ответ.");
+      }
+
       const msg = data?.error?.message || `HTTP ${res.status}`;
-      if (msg.toLowerCase().includes("location") || res.status === 400 && msg.toLowerCase().includes("supported")) {
+      if (msg.toLowerCase().includes("location") || (res.status === 400 && msg.toLowerCase().includes("supported"))) {
         throw new Error(`Регион заблокирован Google (${msg}). Включи VPN через США или Европу.`);
       }
-      throw new Error(`Ошибка Gemini (${res.status}): ${msg}`);
+      lastError = new Error(`Ошибка Gemini (${res.status}): ${msg}`);
+      // Если модель не найдена (404), пробуем следующую модель в списке
+      if (res.status !== 404) break;
     }
 
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!reply) throw new Error("Gemini вернул пустой ответ.");
-    return reply;
+    throw lastError || new Error("Не удалось связаться с Gemini API.");
   }
 
   // === ОБРАБОТКА КОМАНД ЧАТА ДИДЖЕЯ ===
@@ -653,7 +729,7 @@
   "dj_reply": "короткая живая реплика диджея пользователю",
   "mode_label": "название режима для бейджа (например: Сет Paledusk + Микс)",
   "requests": [
-    { "query": "поисковый запрос для Spotify (например: artist:Paledusk или конкретный трек/жанр)", "count": 3 }
+    { "query": "поисковый запрос для Spotify (например: Paledusk или конкретный трек/жанр)", "count": 3 }
   ],
   "fill_with_library": true
 }
@@ -699,10 +775,9 @@
         await playQueueFromStart();
       }
     } catch (err) {
-      // Показываем реальную ошибку в чате, чтобы было понятно, что именно пошло не так
       addChatMessage(`⚠️ ${err.message}`, "err");
 
-      // Умный локальный фолбэк: если пользователь просил конкретного артиста ("3 трека Paledusk")
+      // Умный локальный фолбэк: распознаёт "3 трека Paledusk" даже при сбое Gemini
       const match = userText.match(/(?:(\d+)\s*(?:трек\w*|пес\w*)?\s+)?(?:включи|поставь|сыграй)?\s*(?:(\d+)\s*(?:трек\w*|пес\w*)?\s+)?([a-zA-Zа-яА-Я0-9\s\-&]+?)(?:,|\s+а\s+дальше|$)/i);
       const count = Number(match?.[1] || match?.[2] || 3);
       const artistQuery = (match?.[3] || "").trim();
@@ -711,7 +786,7 @@
         try {
           const found = await searchSpotifyTracks(artistQuery, count);
           if (found.length) {
-            const extra = state.libraryTracks.sort(() => Math.random() - 0.5).slice(0, 5);
+            const extra = [...state.libraryTracks].sort(() => Math.random() - 0.5).slice(0, 5);
             state.queue = [...found.slice(0, count), ...extra];
             renderQueue();
             addChatMessage(`Резервный поиск: нашёл ${found.slice(0, count).length} трек(а) по запросу «${artistQuery}» и добавил твой микс дальше.`, "dj");
@@ -738,15 +813,48 @@
     }
   }
 
+  // === ГЕНЕРАЦИЯ ГИТАРНЫХ ТАБОВ И АККОРДОВ ===
+  async function generateGuitarTabs() {
+    if (!state.currentTrack) {
+      await pollCurrentPlayback();
+    }
+    if (!state.currentTrack) {
+      $("tabsContent").textContent = "Сейчас ничего не играет в Spotify. Включите трек и нажмите кнопку снова.";
+      return;
+    }
+
+    const t = state.currentTrack;
+    $("tabsMeta").innerHTML = `<span class="chip">Трек: ${escapeHtml(t.artist)} — ${escapeHtml(t.name)}</span>`;
+    $("tabsContent").textContent = "Подбираю строй, аккорды и табулатуру риффа...";
+    updateExternalTabLinks(t);
+
+    try {
+      const prompt = `Ты опытный гитарист и транскрибер табулатур. Для песни "${t.name}" группы ${t.artist} (альбом "${t.album}") напиши разбор для электрогитары/акустики:
+1. В первой строке укажи: Строй (например, Standard E, Drop D, Drop C#), Тональность и Темп (BPM).
+2. Укажи основные аккорды / квинты (power chords) для куплета и припева.
+3. Напиши точную и читаемую 6-струнную ASCII-табулатуру (e| B| G| D| A| E|) главного риффа или основной мелодической партии так, чтобы её было удобно играть с экрана телефона (ширина строки до 45 символов).
+Отвечай кратко, без лишней воды, на русском языке.`;
+
+      const reply = await callGemini(prompt);
+      $("tabsContent").textContent = reply;
+      state.lastTabsTrackId = t.id;
+    } catch (e) {
+      $("tabsContent").textContent = `Ошибка генерации табов: ${e.message}`;
+    }
+  }
+
   // === СОБЫТИЯ UI ===
   document.querySelectorAll(".tab").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       const target = btn.dataset.tab;
-      ["chat", "queue", "about"].forEach(t => {
+      ["chat", "queue", "about", "guitar"].forEach(t => {
         $(`tab-${t}`).classList.toggle("hidden", t !== target);
       });
+      if (target === "guitar" && state.currentTrack && state.lastTabsTrackId !== state.currentTrack.id) {
+        updateExternalTabLinks(state.currentTrack);
+      }
     });
   });
 
@@ -759,7 +867,7 @@
     localStorage.setItem("sp_client_id", state.spotifyClientId);
     localStorage.setItem("gemini_api_key", state.geminiKey);
     $("apiModal").classList.remove("open");
-    addChatMessage("Ключи сохранены. Можешь проверять чат!", "dj");
+    addChatMessage("Ключи сохранены. Можешь проверять чат и табы!", "dj");
   });
 
   $("saveAndConnectBtn").addEventListener("click", () => {
@@ -796,6 +904,7 @@
 
   $("refreshQueueBtn").addEventListener("click", () => buildDefaultQueue(8));
   $("explainTrackBtn").addEventListener("click", explainCurrentTrack);
+  $("generateTabsBtn").addEventListener("click", generateGuitarTabs);
 
   $("sendChatBtn").addEventListener("click", () => {
     const val = $("chatInput").value.trim();
@@ -831,4 +940,3 @@
 </script>
 </body>
 </html>
-
