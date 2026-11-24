@@ -3,1201 +3,832 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#121212" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>AI DJ — Spotify Connect</title>
-  <link rel="manifest" href="./manifest.json" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#0b0f17" />
+  <title>AI DJ — Spotify & Gemini</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icon.png" />
+  <link rel="apple-touch-icon" href="icon.png" />
   <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    :root {
+      --bg: #0b0f17;
+      --card: #141b29;
+      --card-2: #1b2436;
+      --border: #26324a;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --green: #1db954;
+      --green-dark: #15803d;
+      --blue: #3b82f6;
+      --red: #ef4444;
+      --amber: #f59e0b;
     }
-    html, body {
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
       margin: 0;
-      padding: 0;
-      background-color: #121212;
-      color: #FFFFFF;
-      height: 100%;
-      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
     }
-    ::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
     }
-    ::-webkit-scrollbar-track {
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 8px var(--red);
+    }
+    .dot.ok { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--card-2);
+      color: var(--text);
+      padding: 8px 13px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-green { background: var(--green); color: #051b0d; border: none; }
+    .btn-blue { background: var(--blue); color: #fff; border: none; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+    main {
+      flex: 1;
+      padding: 14px;
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .now-playing {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .cover {
+      width: 72px; height: 72px;
+      border-radius: 12px;
+      background: var(--card-2);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .track-meta { flex: 1; min-width: 0; }
+    .track-title {
+      font-weight: 700; font-size: 16px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .track-artist {
+      color: var(--muted); font-size: 13px; margin-top: 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(29, 185, 84, 0.15);
+      color: var(--green);
+      font-weight: 600;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: var(--card);
+      padding: 5px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .tab {
       background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #282828;
-      border-radius: 4px;
-    }
-    .spotify-card {
-      background-color: #181818;
+      border: none;
+      color: var(--muted);
+      padding: 9px 6px;
       border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
     }
-    .spotify-row {
-      border-radius: 6px;
-      transition: background-color 0.15s ease;
+    .tab.active { background: var(--card-2); color: var(--text); }
+
+    .chat-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 360px;
+      overflow-y: auto;
+      padding-right: 4px;
     }
-    .spotify-row:active, .spotify-row:hover {
-      background-color: #282828;
+    .msg {
+      padding: 10px 13px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.45;
+      max-width: 88%;
+      white-space: pre-wrap;
     }
-    .pill-btn {
-      border-radius: 9999px;
-      transition: transform 0.1s ease, background-color 0.15s ease;
+    .msg.dj { background: var(--card-2); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg.user { background: var(--green); color: #051b0d; font-weight: 500; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg.err { background: rgba(239, 68, 68, 0.16); border: 1px solid rgba(239, 68, 68, 0.45); color: #fecaca; align-self: flex-start; font-size: 13px; }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
     }
-    .pill-btn:active {
-      transform: scale(0.97);
+    input, textarea {
+      width: 100%;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
     }
+    input:focus { border-color: var(--green); }
+
+    .queue-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .queue-item:last-child { border-bottom: none; }
+    .q-info { min-width: 0; flex: 1; }
+    .q-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .q-sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+    .hint { font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .hidden { display: none !important; }
   </style>
 </head>
-<body class="flex justify-center bg-[#121212] text-white">
-  <div class="w-full max-w-md h-full flex flex-col bg-[#121212] relative">
+<body>
 
-    <!-- Top Header -->
-    <header class="px-4 pt-4 pb-3 flex items-center justify-between shrink-0 border-b border-[#282828]/70">
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-full bg-[#1DB954] flex items-center justify-center text-black font-extrabold text-xs tracking-tight">
-          DJ
-        </div>
-        <div>
-          <h1 class="text-base font-bold leading-tight tracking-tight">AI DJ</h1>
-          <div class="flex items-center gap-1.5 text-[11px] text-[#B3B3B3]">
-            <span id="statusDot" class="w-2 h-2 rounded-full bg-[#535353]"></span>
-            <span id="statusText">Не подключено</span>
-          </div>
-        </div>
-      </div>
+<header>
+  <div class="brand">
+    <span id="spotifyDot" class="dot"></span>
+    <span>AI DJ</span>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <button class="btn btn-sm" id="syncBtn" title="Обновить медиатеку">↻ Медиатека</button>
+    <button class="btn btn-sm" id="openApiBtn">API</button>
+  </div>
+</header>
 
-      <div class="flex items-center gap-2">
-        <button id="deviceBtn" onclick="refreshDevices()" title="Выбор устройства" class="hidden px-2.5 py-1.5 rounded-full bg-[#282828] text-[11px] font-medium text-[#B3B3B3] hover:text-white flex items-center gap-1.5 max-w-[130px] truncate">
-          <svg class="w-3.5 h-3.5 text-[#1DB954] shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
-          <span id="deviceName" class="truncate">Телефон</span>
-        </button>
-        <button onclick="openSettings()" class="px-3 py-1.5 rounded-full bg-[#282828] hover:bg-[#333333] text-xs font-semibold text-white transition">
-          API
-        </button>
-      </div>
-    </header>
-
-    <!-- Main Scrollable Content -->
-    <main class="flex-1 overflow-y-auto px-4 pt-3 pb-24">
-
-      <!-- TAB 1: AIR / QUEUE -->
-      <section id="tab-air" class="space-y-4">
-
-        <!-- DJ Control Banner -->
-        <div class="spotify-card p-4 flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-[#B3B3B3]" id="djMoodLabel">Персональный эфир</div>
-            <div class="text-sm font-bold text-white truncate mt-0.5" id="djVibeSummary">J-Rock · Японское инди · Мат-рок</div>
-          </div>
-          <button id="djToggleBtn" onclick="toggleDJ()" class="pill-btn shrink-0 px-5 py-2.5 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold text-xs tracking-wide uppercase flex items-center gap-2">
-            <svg id="djToggleIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            <span id="djToggleText">START DJ</span>
-          </button>
-        </div>
-
-        <!-- Now Playing Card -->
-        <div class="spotify-card p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-[#B3B3B3]">Сейчас играет</span>
-            <button onclick="askAboutCurrentTrack()" class="text-[11px] font-semibold text-[#1DB954] hover:underline">
-              О треке →
-            </button>
-          </div>
-
-          <div class="flex items-center gap-3.5">
-            <div class="w-16 h-16 rounded bg-[#282828] shrink-0 overflow-hidden flex items-center justify-center relative">
-              <img id="npCover" src="" alt="" class="w-full h-full object-cover hidden" />
-              <svg id="npPlaceholder" class="w-7 h-7 text-[#535353]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-            </div>
-            <div class="min-w-0 flex-1">
-              <div id="npTitle" class="text-base font-bold text-white truncate">Эфир не запущен</div>
-              <div id="npArtist" class="text-xs text-[#B3B3B3] truncate mt-0.5">Нажмите START DJ для запуска</div>
-              <div id="npNote" class="text-[11px] text-[#1DB954] truncate mt-1"></div>
-            </div>
-            <button id="likeBtn" onclick="toggleLikeCurrent()" class="p-2 text-[#B3B3B3] hover:text-white shrink-0" title="Добавить в любимые">
-              <svg id="likeIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-            </button>
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="space-y-1">
-            <div class="w-full h-1 bg-[#282828] rounded-full overflow-hidden">
-              <div id="progressBar" class="h-full bg-white rounded-full transition-all duration-500" style="width: 0%"></div>
-            </div>
-            <div class="flex justify-between text-[10px] text-[#B3B3B3]">
-              <span id="timeElapsed">0:00</span>
-              <span id="timeTotal">0:00</span>
-            </div>
-          </div>
-
-          <!-- Transport Controls -->
-          <div class="flex items-center justify-center gap-7 pt-1">
-            <button onclick="prevTrack()" class="p-2 text-[#B3B3B3] hover:text-white transition" title="Предыдущий">
-              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-            </button>
-            <button onclick="togglePlayPause()" class="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition" title="Пауза / Воспроизведение">
-              <svg id="playPauseIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            </button>
-            <button onclick="nextTrack()" class="p-2 text-[#B3B3B3] hover:text-white transition" title="Следующий">
-              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Next 5 Tracks Queue -->
-        <div class="spotify-card p-4 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-white">Следующие 5 треков</span>
-            <button onclick="refillQueue(true)" class="text-[11px] font-semibold text-[#B3B3B3] hover:text-white">
-              Обновить
-            </button>
-          </div>
-          <div id="queueList" class="space-y-1">
-            <div class="text-xs text-[#B3B3B3] py-4 text-center">Загрузка подборки...</div>
-          </div>
-        </div>
-
-        <!-- Play History -->
-        <div class="spotify-card p-4 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-white">История эфира</span>
-            <span id="historyCount" class="text-[11px] text-[#B3B3B3]">0</span>
-          </div>
-          <div id="historyList" class="space-y-1">
-            <div class="text-xs text-[#B3B3B3] py-3 text-center">Прослушанные треки появятся здесь</div>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- TAB 2: CHAT WITH DJ -->
-      <section id="tab-chat" class="hidden h-full flex flex-col">
-        <div class="flex gap-1.5 overflow-x-auto pb-2.5 shrink-0">
-          <button onclick="sendQuickPrompt('Сделай спокойнее для работы')" class="shrink-0 px-3 py-1.5 rounded-full bg-[#282828] hover:bg-[#333333] text-xs text-white">Спокойнее для работы</button>
-          <button onclick="sendQuickPrompt('Дай что-то новое в духе Ado')" class="shrink-0 px-3 py-1.5 rounded-full bg-[#282828] hover:bg-[#333333] text-xs text-white">Новое как Ado</button>
-          <button onclick="sendQuickPrompt('Поставь 3 трека MASS OF THE FERMENTING DREGS')" class="shrink-0 px-3 py-1.5 rounded-full bg-[#282828] hover:bg-[#333333] text-xs text-white">3 трека MOTFD</button>
-          <button onclick="sendQuickPrompt('Добавь драйва и J-Rock')" class="shrink-0 px-3 py-1.5 rounded-full bg-[#282828] hover:bg-[#333333] text-xs text-white">Больше J-Rock</button>
-        </div>
-
-        <div id="chatMessages" class="flex-1 overflow-y-auto space-y-2.5 pr-1 pb-2" style="max-height: calc(100vh - 230px);">
-          <div class="bg-[#181818] rounded-lg p-3 text-xs text-[#E5E5E5] leading-relaxed">
-            Привет! Я ориентируюсь на твой вкус (Ado, Creepy Nuts, the pillows, Ling tosite sigure, J-Rock, мат-рок, японское инди). Напиши, что поставить, сколько треков конкретного артиста добавить или какой вайб нужен сейчас.
-          </div>
-        </div>
-
-        <form onsubmit="handleChatSubmit(event)" class="pt-2 flex gap-2 shrink-0">
-          <input id="chatInput" type="text" placeholder="Например: поставь 3 трека Ling tosite sigure..." class="flex-1 bg-[#282828] text-white placeholder-[#B3B3B3] text-xs rounded-full px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1DB954]" />
-          <button type="submit" class="w-10 h-10 rounded-full bg-[#1DB954] text-black flex items-center justify-center shrink-0 hover:bg-[#1ed760]">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-          </button>
-        </form>
-      </section>
-
-      <!-- TAB 3: ABOUT TRACK / ARTIST -->
-      <section id="tab-info" class="hidden h-full flex flex-col">
-        <div class="spotify-card p-3 mb-2.5 flex items-center justify-between shrink-0">
-          <div class="min-w-0">
-            <div class="text-[10px] uppercase tracking-wider text-[#B3B3B3]">Контекст</div>
-            <div id="infoContextTrack" class="text-xs font-semibold text-white truncate">Трек не выбран</div>
-          </div>
-          <button onclick="askCurrentInfoAuto()" class="px-3 py-1.5 rounded-full bg-[#282828] hover:bg-[#333333] text-[11px] font-semibold text-[#1DB954] shrink-0">
-            Разобрать трек
-          </button>
-        </div>
-
-        <div id="infoMessages" class="flex-1 overflow-y-auto space-y-2.5 pr-1 pb-2" style="max-height: calc(100vh - 245px);">
-          <div class="bg-[#181818] rounded-lg p-3 text-xs text-[#E5E5E5] leading-relaxed">
-            Спроси о текущем треке, биографии исполнителя, истории записи или связи с аниме. Если в настройках указан Gemini API Key, ответит нейросеть; без ключа подтяну справку из открытых источников.
-          </div>
-        </div>
-
-        <form onsubmit="handleInfoSubmit(event)" class="pt-2 flex gap-2 shrink-0">
-          <input id="infoInput" type="text" placeholder="Спросить о треке или группе..." class="flex-1 bg-[#282828] text-white placeholder-[#B3B3B3] text-xs rounded-full px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#1DB954]" />
-          <button type="submit" class="w-10 h-10 rounded-full bg-[#1DB954] text-black flex items-center justify-center shrink-0 hover:bg-[#1ed760]">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-          </button>
-        </form>
-      </section>
-
-    </main>
-
-    <!-- Bottom Navigation -->
-    <nav class="h-16 bg-[#121212] border-t border-[#282828] px-6 flex items-center justify-around shrink-0 fixed bottom-0 left-0 right-0 max-w-md mx-auto">
-      <button onclick="switchTab('air')" id="nav-air" class="flex flex-col items-center gap-1 text-white">
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-        <span class="text-[10px] font-semibold">Эфир</span>
-      </button>
-      <button onclick="switchTab('chat')" id="nav-chat" class="flex flex-col items-center gap-1 text-[#B3B3B3]">
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-        <span class="text-[10px] font-semibold">Чат с DJ</span>
-      </button>
-      <button onclick="switchTab('info')" id="nav-info" class="flex flex-col items-center gap-1 text-[#B3B3B3]">
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-        <span class="text-[10px] font-semibold">О треке</span>
-      </button>
-    </nav>
-
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-      <div class="bg-[#181818] w-full max-w-md rounded-2xl p-5 space-y-4 border border-[#282828]">
-        <div class="flex items-center justify-between">
-          <h2 class="text-base font-bold">Подключение API</h2>
-          <button onclick="closeSettings()" class="text-[#B3B3B3] hover:text-white text-lg px-2">✕</button>
-        </div>
-
-        <div class="space-y-3 text-xs">
-          <div>
-            <label class="block text-[#B3B3B3] font-semibold mb-1">Redirect URI (укажи в Spotify Dashboard)</label>
-            <div class="flex gap-2">
-              <input id="redirectUriInput" type="text" readonly class="flex-1 bg-[#121212] border border-[#282828] rounded-lg px-3 py-2 text-[#B3B3B3] text-[11px]" />
-              <button onclick="copyRedirectUri()" class="px-3 py-2 rounded-lg bg-[#282828] text-white font-semibold shrink-0">Копия</button>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-[#B3B3B3] font-semibold mb-1">Spotify Client ID (обязательно)</label>
-            <input id="clientIdInput" type="text" placeholder="Вставьте 32-значный Client ID" class="w-full bg-[#121212] border border-[#282828] rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-[#1DB954]" />
-          </div>
-
-          <div>
-            <label class="block text-[#B3B3B3] font-semibold mb-1">Gemini API Key (по желанию, для умного диалога)</label>
-            <input id="geminiKeyInput" type="password" placeholder="AIza... (можно оставить пустым)" class="w-full bg-[#121212] border border-[#282828] rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-[#1DB954]" />
-          </div>
-
-          <div id="deviceSelectWrapper" class="hidden">
-            <label class="block text-[#B3B3B3] font-semibold mb-1">Устройство воспроизведения</label>
-            <select id="deviceSelect" onchange="selectDevice(this.value)" class="w-full bg-[#121212] border border-[#282828] rounded-lg px-3 py-2.5 text-white"></select>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-2 pt-1">
-          <button onclick="saveAndConnectSpotify()" class="pill-btn w-full py-3 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold text-xs uppercase tracking-wider">
-            Сохранить и подключить Spotify
-          </button>
-          <button onclick="saveOnlyKeys()" class="pill-btn w-full py-2.5 bg-[#282828] hover:bg-[#333333] text-white font-semibold text-xs">
-            Только сохранить ключи
-          </button>
-        </div>
+<main>
+  <!-- Плеер -->
+  <section class="card">
+    <div class="now-playing">
+      <img id="coverImg" class="cover" src="icon.png" alt="Cover" />
+      <div class="track-meta">
+        <div id="trackTitle" class="track-title">Готов к эфиру</div>
+        <div id="trackArtist" class="track-artist">Нажмите START DJ или напишите диджею</div>
+        <div id="djModeBadge" class="badge">Режим: Личный микс</div>
       </div>
     </div>
+    <div class="controls">
+      <button id="startDjBtn" class="btn btn-green">▶ START DJ</button>
+      <button id="pauseBtn" class="btn">⏯</button>
+      <button id="nextBtn" class="btn">⏭</button>
+    </div>
+  </section>
 
+  <!-- Вкладки -->
+  <div class="tabs">
+    <button class="tab active" data-tab="chat">Чат с DJ</button>
+    <button class="tab" data-tab="queue">Очередь (<span id="queueCount">0</span>)</button>
+    <button class="tab" data-tab="about">О треке</button>
   </div>
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
-      });
+  <!-- Вкладка: Чат -->
+  <section id="tab-chat" class="card">
+    <div id="chatBox" class="chat-box">
+      <div class="msg dj">Привет! Я на связи. Напиши, что поставить — например: «Включи 3 трека Paledusk, а дальше как обычно» или «Сделай бодрый японский рок-сет».</div>
+    </div>
+    <div class="chat-input-row">
+      <input id="chatInput" type="text" placeholder="Запрос диджею..." />
+      <button id="sendChatBtn" class="btn btn-green">➤</button>
+    </div>
+  </section>
+
+  <!-- Вкладка: Очередь -->
+  <section id="tab-queue" class="card hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <strong style="font-size:14px;">Следующие треки в сете</strong>
+      <button id="refreshQueueBtn" class="btn btn-sm">Обновить</button>
+    </div>
+    <div id="queueList" class="hint">Очередь пока пуста. Нажмите START DJ или закажите треки в чате.</div>
+  </section>
+
+  <!-- Вкладка: О треке -->
+  <section id="tab-about" class="card hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <strong style="font-size:14px;">История и факты от AI DJ</strong>
+      <button id="explainTrackBtn" class="btn btn-sm btn-blue">Рассказать о текущем</button>
+    </div>
+    <div id="aboutContent" class="hint">Включите трек и нажмите «Рассказать о текущем», чтобы диджей выдал справку о группе, жанре и релизе.</div>
+  </section>
+</main>
+
+<!-- Модальное окно API -->
+<div id="apiModal" class="modal-backdrop">
+  <div class="modal">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <strong>Настройки API</strong>
+      <button id="closeApiBtn" class="btn btn-sm">✕</button>
+    </div>
+    <div>
+      <label>Spotify Client ID</label>
+      <input id="spotifyClientIdInput" type="text" placeholder="Вставьте Client ID из Spotify Dashboard" />
+    </div>
+    <div>
+      <label>Gemini API Key (формат AQ.Ab8... или AIzaSy...)</label>
+      <input id="geminiKeyInput" type="password" placeholder="Вставьте ключ из Google AI Studio" />
+      <div class="hint" style="margin-top:4px;">Для работы Gemini в РФ нужен включённый VPN (США / Европа).</div>
+    </div>
+    <div class="hint">Redirect URI для Spotify: <code id="redirectUriText" style="color:#93c5fd;"></code></div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
+      <button id="saveOnlyBtn" class="btn btn-blue" style="flex:1;">Только сохранить ключи</button>
+      <button id="saveAndConnectBtn" class="btn btn-green" style="flex:1;">Сохранить и войти в Spotify</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // === КОНФИГУРАЦИЯ И СОСТОЯНИЕ ===
+  const REDIRECT_URI = window.location.origin + window.location.pathname;
+  const SCOPES = [
+    "user-read-playback-state",
+    "user-modify-playback-state",
+    "user-read-currently-playing",
+    "user-library-read",
+    "user-top-read",
+    "playlist-read-private"
+  ].join(" ");
+
+  const state = {
+    spotifyClientId: localStorage.getItem("sp_client_id") || "",
+    geminiKey: (localStorage.getItem("gemini_api_key") || "").trim(),
+    accessToken: localStorage.getItem("sp_access_token") || "",
+    refreshToken: localStorage.getItem("sp_refresh_token") || "",
+    expiresAt: Number(localStorage.getItem("sp_expires_at") || 0),
+    libraryTracks: JSON.parse(localStorage.getItem("sp_library_cache") || "[]"),
+    queue: [],
+    currentTrack: null,
+    chatHistory: []
+  };
+
+  // === DOM ЭЛЕМЕНТЫ ===
+  const $ = (id) => document.getElementById(id);
+  $("redirectUriText").textContent = REDIRECT_URI;
+  $("spotifyClientIdInput").value = state.spotifyClientId;
+  $("geminiKeyInput").value = state.geminiKey;
+
+  function addChatMessage(text, type = "dj") {
+    const box = $("chatBox");
+    const div = document.createElement("div");
+    div.className = `msg ${type}`;
+    div.textContent = text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function updateStatusDot() {
+    const dot = $("spotifyDot");
+    if (state.accessToken && Date.now() < state.expiresAt) {
+      dot.classList.add("ok");
+    } else {
+      dot.classList.remove("ok");
     }
+  }
 
-    const USER_TASTE_POOL = [
-      "Ado", "Creepy Nuts", "MASS OF THE FERMENTING DREGS", "the pillows",
-      "Ling tosite sigure", "TK from Ling tosite sigure", "Sayuri", "(K)NoW_NAME",
-      "YOASOBI", "Bring Me The Horizon", "MAXIMUM THE HORMONE", "Sokoninaru",
-      "9Lana", "KANA-BOON", "RADWIMPS", "Fujii Kaze", "kensuke ushio",
-      "Vaundy", "Cö shu Nie", "ヨルシカ", "Mrs. GREEN APPLE", "ATARASHII GAKKO!",
-      "Hakushi Hasegawa", "ZUTOMAYO", "Eve", "King Gnu", "Frederic",
-      "Asian Kung-Fu Generation", "Number Girl", "tricot", "toe", "LITE",
-      "Polkadot Stingray", "Hitorie", "wowaka", "Neru", "PinocchioP",
-      "DECO*27", "Syudou", "Giga", "Reol", "chanmina", "haruka nakamura"
-    ];
+  // === PKCE АВТОРИЗАЦИЯ SPOTIFY ===
+  function generateRandomString(len) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const arr = new Uint8Array(len);
+    crypto.getRandomValues(arr);
+    return Array.from(arr, x => chars[x % chars.length]).join("");
+  }
 
-    const WORK_FOCUS_ARTISTS = [
-      "kensuke ushio", "toe", "LITE", "tricot", "the pillows",
-      "MASS OF THE FERMENTING DREGS", "RADWIMPS", "Fujii Kaze",
-      "ヨルシカ", "haruka nakamura", "Akeboshi", "Cö shu Nie", "Nujabes"
-    ];
+  async function sha256(plain) {
+    const data = new TextEncoder().encode(plain);
+    return crypto.subtle.digest("SHA-256", data);
+  }
 
-    const HEAVY_ARTISTS = [
-      "Bring Me The Horizon", "MAXIMUM THE HORMONE", "Ling tosite sigure",
-      "Sokoninaru", "花冷え。", "Crossfaith", "Coldrain", "SiM", "Fear, and Loathing in Las Vegas"
-    ];
+  function base64encode(input) {
+    return btoa(String.fromCharCode(...new Uint8Array(input)))
+      .replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  }
 
-    const state = {
-      clientId: localStorage.getItem('sp_client_id') || '',
-      geminiKey: localStorage.getItem('gemini_api_key') || '',
-      accessToken: localStorage.getItem('sp_access_token') || '',
-      refreshToken: localStorage.getItem('sp_refresh_token') || '',
-      tokenExpiry: Number(localStorage.getItem('sp_token_expiry') || 0),
-      deviceId: localStorage.getItem('sp_device_id') || '',
-      djActive: false,
-      isPlaying: false,
-      currentTrack: null,
-      queue: [],
-      history: [],
-      likedUris: new Set(),
-      vibeMode: 'balanced',
-      lastTrackUri: null
-    };
-
-    const CLEAN_REDIRECT_URI = window.location.origin + window.location.pathname;
-
-    function generateRandomString(length) {
-      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      const values = crypto.getRandomValues(new Uint8Array(length));
-      return values.reduce((acc, x) => acc + possible[x % possible.length], "");
+  async function loginSpotify() {
+    if (!state.spotifyClientId) {
+      alert("Сначала введите Spotify Client ID.");
+      return;
     }
+    const verifier = generateRandomString(64);
+    const challenge = base64encode(await sha256(verifier));
+    localStorage.setItem("sp_code_verifier", verifier);
 
-    async function sha256(plain) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(plain);
-      return window.crypto.subtle.digest('SHA-256', data);
+    const params = new URLSearchParams({
+      response_type: "code",
+      client_id: state.spotifyClientId,
+      scope: SCOPES,
+      code_challenge_method: "S256",
+      code_challenge: challenge,
+      redirect_uri: REDIRECT_URI
+    });
+    window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+  }
+
+  async function exchangeCodeForToken(code) {
+    const verifier = localStorage.getItem("sp_code_verifier");
+    const body = new URLSearchParams({
+      client_id: state.spotifyClientId,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: REDIRECT_URI,
+      code_verifier: verifier
+    });
+    const res = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      saveTokens(data);
+      window.history.replaceState({}, document.title, REDIRECT_URI);
+      await syncLibrary();
     }
+  }
 
-    function base64encode(input) {
-      return btoa(String.fromCharCode(...new Uint8Array(input)))
-        .replace(/=/g, '')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_');
-    }
-
-    async function startSpotifyAuth() {
-      if (!state.clientId) {
-        openSettings();
-        return;
-      }
-      const codeVerifier = generateRandomString(64);
-      localStorage.setItem('sp_code_verifier', codeVerifier);
-      const hashed = await sha256(codeVerifier);
-      const codeChallenge = base64encode(hashed);
-
-      const scope = [
-        'user-read-playback-state',
-        'user-modify-playback-state',
-        'user-read-currently-playing',
-        'user-library-read',
-        'user-library-modify',
-        'streaming'
-      ].join(' ');
-
-      const authUrl = new URL("https://accounts.spotify.com/authorize");
-      authUrl.search = new URLSearchParams({
-        response_type: 'code',
-        client_id: state.clientId,
-        scope,
-        code_challenge_method: 'S256',
-        code_challenge: codeChallenge,
-        redirect_uri: CLEAN_REDIRECT_URI,
-      }).toString();
-
-      window.location.href = authUrl.toString();
-    }
-
-    async function handleAuthCallback() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
-      if (!code) return;
-
-      const codeVerifier = localStorage.getItem('sp_code_verifier');
-      if (!codeVerifier || !state.clientId) return;
-
-      try {
-        const res = await fetch('https://accounts.spotify.com/api/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            client_id: state.clientId,
-            grant_type: 'authorization_code',
-            code,
-            redirect_uri: CLEAN_REDIRECT_URI,
-            code_verifier: codeVerifier,
-          }),
-        });
-        const data = await res.json();
-        if (data.access_token) {
-          saveTokens(data);
-          window.history.replaceState({}, document.title, CLEAN_REDIRECT_URI);
-        }
-      } catch (e) {
-        console.error('Auth error:', e);
-      }
-    }
-
-    function saveTokens(data) {
-      state.accessToken = data.access_token;
-      if (data.refresh_token) state.refreshToken = data.refresh_token;
-      state.tokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
-      localStorage.setItem('sp_access_token', state.accessToken);
-      if (state.refreshToken) localStorage.setItem('sp_refresh_token', state.refreshToken);
-      localStorage.setItem('sp_token_expiry', String(state.tokenExpiry));
-    }
-
-    async function getValidToken() {
-      if (!state.accessToken) return null;
-      if (Date.now() < state.tokenExpiry) return state.accessToken;
-      if (!state.refreshToken || !state.clientId) return state.accessToken;
-
-      try {
-        const res = await fetch('https://accounts.spotify.com/api/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            client_id: state.clientId,
-            grant_type: 'refresh_token',
-            refresh_token: state.refreshToken
-          }),
-        });
-        const data = await res.json();
-        if (data.access_token) {
-          saveTokens(data);
-          return state.accessToken;
-        }
-      } catch (e) {
-        console.error('Refresh error:', e);
-      }
-      return state.accessToken;
-    }
-
-    async function spotifyApi(endpoint, method = 'GET', body = null) {
-      const token = await getValidToken();
-      if (!token) return null;
-
-      const options = {
-        method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      };
-      if (body) options.body = JSON.stringify(body);
-
-      const res = await fetch(`https://api.spotify.com/v1${endpoint}`, options);
-      if (res.status === 204) return { ok: true };
-      if (!res.ok) {
-        return null;
-      }
-      return res.json();
-    }
-
-    function pickRandom(arr, count) {
-      const copy = [...arr];
-      for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy.slice(0, count);
-    }
-
-    function formatSpotifyTrack(item, reason = '') {
-      return {
-        uri: item.uri,
-        id: item.id,
-        name: item.name,
-        artist: item.artists.map(a => a.name).join(', '),
-        album: item.album?.name || '',
-        cover: item.album?.images?.[1]?.url || item.album?.images?.[0]?.url || '',
-        durationMs: item.duration_ms || 0,
-        reason
-      };
-    }
-
-    async function searchSpotifyTracks(query, limit = 5, randomizeOffset = true) {
-      const offset = randomizeOffset ? Math.floor(Math.random() * 15) : 0;
-      const q = encodeURIComponent(query);
-      let data = await spotifyApi(`/search?q=${q}&type=track&limit=${limit}&offset=${offset}`);
-      if (!data?.tracks?.items?.length && offset > 0) {
-        data = await spotifyApi(`/search?q=${q}&type=track&limit=${limit}&offset=0`);
-      }
-      return data?.tracks?.items || [];
-    }
-
-    async function fetchArtistTracks(artistName, count = 3, exactTop = false) {
-      const items = await searchSpotifyTracks(`artist:"${artistName}"`, 10, !exactTop);
-      const filtered = items.filter(t =>
-        t.artists.some(a => a.name.toLowerCase().includes(artistName.toLowerCase()))
-      );
-      const source = filtered.length ? filtered : items;
-      return pickRandom(source, count).map(t => formatSpotifyTrack(t, `По запросу: ${artistName}`));
-    }
-
-    async function generateFreshBatch(count = 5) {
-      if (!state.accessToken) {
-        return getFallbackMockBatch(count);
-      }
-
-      let pool = USER_TASTE_POOL;
-      let tag = 'Твой профиль';
-      if (state.vibeMode === 'work') {
-        pool = WORK_FOCUS_ARTISTS;
-        tag = 'Фокус и работа';
-      } else if (state.vibeMode === 'heavy') {
-        pool = HEAVY_ARTISTS;
-        tag = 'Тяжёлый драйв';
-      }
-
-      const chosenArtists = pickRandom(pool, count + 2);
-      const results = [];
-      const usedUris = new Set([
-        state.currentTrack?.uri,
-        ...state.queue.map(t => t.uri),
-        ...state.history.slice(0, 15).map(t => t.uri)
-      ]);
-
-      for (const artist of chosenArtists) {
-        if (results.length >= count) break;
-        const items = await searchSpotifyTracks(`artist:"${artist}"`, 8, true);
-        const candidates = items.filter(t => !usedUris.has(t.uri));
-        if (candidates.length > 0) {
-          const picked = candidates[Math.floor(Math.random() * candidates.length)];
-          usedUris.add(picked.uri);
-          results.push(formatSpotifyTrack(picked, `${tag} · ${artist}`));
-        }
-      }
-
-      return results;
-    }
-
-    function getFallbackMockBatch(count = 5) {
-      return [
-        { uri: 'mock:1', name: 'Подключи Spotify API', artist: 'Нажмите кнопку API сверху справа', cover: '', durationMs: 0, reason: 'Требуется Client ID' }
-      ].slice(0, count);
-    }
-
-    async function refreshDevices() {
-      const data = await spotifyApi('/me/player/devices');
-      const devices = data?.devices || [];
-      const select = document.getElementById('deviceSelect');
-      const wrapper = document.getElementById('deviceSelectWrapper');
-      const btn = document.getElementById('deviceBtn');
-      const label = document.getElementById('deviceName');
-
-      if (!devices.length) {
-        label.textContent = 'Открой Spotify';
-        return;
-      }
-
-      btn.classList.remove('hidden');
-      wrapper.classList.remove('hidden');
-      select.innerHTML = '';
-
-      let active = devices.find(d => d.is_active) || devices.find(d => d.type === 'Smartphone') || devices[0];
-      if (state.deviceId && devices.some(d => d.id === state.deviceId)) {
-        active = devices.find(d => d.id === state.deviceId);
-      }
-
-      devices.forEach(d => {
-        const opt = document.createElement('option');
-        opt.value = d.id;
-        opt.textContent = `${d.name} (${d.type})`;
-        if (d.id === active.id) opt.selected = true;
-        select.appendChild(opt);
-      });
-
-      state.deviceId = active.id;
-      localStorage.setItem('sp_device_id', state.deviceId);
-      label.textContent = active.name;
-    }
-
-    function selectDevice(id) {
-      state.deviceId = id;
-      localStorage.setItem('sp_device_id', id);
-      const sel = document.getElementById('deviceSelect');
-      const text = sel.options[sel.selectedIndex]?.text || 'Устройство';
-      document.getElementById('deviceName').textContent = text.split(' (')[0];
-    }
-
-    async function playQueueOnSpotify(tracksToPlay) {
-      if (!state.accessToken) {
-        openSettings();
-        return false;
-      }
-      const validTracks = tracksToPlay.filter(t => t.uri && t.uri.startsWith('spotify:track:'));
-      if (!validTracks.length) return false;
-
-      await refreshDevices();
-      const deviceQuery = state.deviceId ? `?device_id=${state.deviceId}` : '';
-      const uris = validTracks.map(t => t.uri);
-
-      const res = await spotifyApi(`/me/player/play${deviceQuery}`, 'PUT', { uris });
-      if (!res) {
-        addChatMessage('dj', 'Не вижу активный плеер Spotify. Открой приложение Spotify на телефоне на 2 секунды и нажми START DJ ещё раз.');
-        return false;
-      }
-
-      state.isPlaying = true;
-      updatePlayPauseUI();
-      setTimeout(syncPlaybackState, 800);
+  async function refreshSpotifyToken() {
+    if (!state.refreshToken || !state.spotifyClientId) return false;
+    const body = new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: state.refreshToken,
+      client_id: state.spotifyClientId
+    });
+    const res = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      saveTokens(data);
       return true;
     }
+    return false;
+  }
 
-    async function toggleDJ() {
-      if (!state.accessToken) {
-        openSettings();
-        return;
+  function saveTokens(data) {
+    state.accessToken = data.access_token;
+    if (data.refresh_token) state.refreshToken = data.refresh_token;
+    state.expiresAt = Date.now() + (data.expires_in - 60) * 1000;
+    localStorage.setItem("sp_access_token", state.accessToken);
+    localStorage.setItem("sp_refresh_token", state.refreshToken);
+    localStorage.setItem("sp_expires_at", String(state.expiresAt));
+    updateStatusDot();
+  }
+
+  async function spFetch(endpoint, options = {}) {
+    if (Date.now() >= state.expiresAt) {
+      await refreshSpotifyToken();
+    }
+    const res = await fetch(`https://api.spotify.com/v1${endpoint}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${state.accessToken}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {})
       }
+    });
+    if (res.status === 204) return null;
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Spotify ${res.status}: ${errText}`);
+    }
+    return res.json();
+  }
 
-      state.djActive = !state.djActive;
-      updateDjButtonUI();
+  // === ЗАГРУЗКА МЕДИАТЕКИ И ПОИСК ===
+  async function syncLibrary() {
+    try {
+      const [saved, top] = await Promise.all([
+        spFetch("/me/tracks?limit=50"),
+        spFetch("/me/top/tracks?limit=50&time_range=medium_term")
+      ]);
+      const map = new Map();
+      (saved?.items || []).forEach(i => i.track && map.set(i.track.id, simplifyTrack(i.track)));
+      (top?.items || []).forEach(t => t && map.set(t.id, simplifyTrack(t)));
+      state.libraryTracks = Array.from(map.values());
+      localStorage.setItem("sp_library_cache", JSON.stringify(state.libraryTracks));
+      updateStatusDot();
+      if (!state.queue.length && state.libraryTracks.length) {
+        buildDefaultQueue(8);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
-      if (state.djActive) {
-        document.getElementById('djMoodLabel').textContent = 'Эфир активен';
-        const batch = await generateFreshBatch(6);
-        if (batch.length > 0) {
-          const first = batch[0];
-          state.queue = batch.slice(1, 6);
-          setCurrentTrack(first);
-          renderQueue();
-          await playQueueOnSpotify([first, ...state.queue]);
+  function simplifyTrack(t) {
+    return {
+      id: t.id,
+      uri: t.uri,
+      name: t.name,
+      artist: (t.artists || []).map(a => a.name).join(", "),
+      album: t.album?.name || "",
+      cover: t.album?.images?.[0]?.url || "icon.png"
+    };
+  }
+
+  async function searchSpotifyTracks(query, limit = 5) {
+    const q = encodeURIComponent(query);
+    const data = await spFetch(`/search?q=${q}&type=track&limit=${limit}`);
+    return (data?.tracks?.items || []).map(simplifyTrack);
+  }
+
+  function buildDefaultQueue(count = 8) {
+    if (!state.libraryTracks.length) return [];
+    const shuffled = [...state.libraryTracks].sort(() => Math.random() - 0.5);
+    state.queue = shuffled.slice(0, count);
+    renderQueue();
+    return state.queue;
+  }
+
+  function renderQueue() {
+    $("queueCount").textContent = state.queue.length;
+    const list = $("queueList");
+    if (!state.queue.length) {
+      list.innerHTML = `<div class="hint">Очередь пуста.</div>`;
+      return;
+    }
+    list.innerHTML = state.queue.map((t, idx) => `
+      <div class="queue-item">
+        <div class="q-info">
+          <div class="q-title">${idx + 1}. ${escapeHtml(t.name)}</div>
+          <div class="q-sub">${escapeHtml(t.artist)}</div>
+        </div>
+        <button class="btn btn-sm" onclick="window.__playIndex(${idx})">▶</button>
+      </div>
+    `).join("");
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, s => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[s]));
+  }
+
+  // === УПРАВЛЕНИЕ ВОСПРОИЗВЕДЕНИЕМ ===
+  async function getActiveDeviceId() {
+    const data = await spFetch("/me/player/devices");
+    const devices = data?.devices || [];
+    if (!devices.length) return null;
+    const active = devices.find(d => d.is_active) || devices.find(d => d.type === "Smartphone") || devices[0];
+    return active.id;
+  }
+
+  async function playQueueFromStart() {
+    if (!state.queue.length) {
+      await syncLibrary();
+      buildDefaultQueue(8);
+    }
+    if (!state.queue.length) {
+      addChatMessage("Медиатека Spotify пуста или нет подключения. Проверь кнопку API.", "err");
+      return;
+    }
+
+    const deviceId = await getActiveDeviceId();
+    if (!deviceId) {
+      addChatMessage("Не вижу активный плеер Spotify. Открой приложение Spotify на телефоне на 2 секунды, нажми Play/Pause и снова нажми START DJ.", "err");
+      return;
+    }
+
+    const uris = state.queue.map(t => t.uri);
+    await spFetch(`/me/player/play?device_id=${encodeURIComponent(deviceId)}`, {
+      method: "PUT",
+      body: JSON.stringify({ uris })
+    });
+
+    state.currentTrack = state.queue[0];
+    updateNowPlayingUI(state.currentTrack);
+  }
+
+  window.__playIndex = async (idx) => {
+    const selected = state.queue.slice(idx);
+    if (!selected.length) return;
+    state.queue = selected;
+    renderQueue();
+    await playQueueFromStart();
+  };
+
+  function updateNowPlayingUI(track) {
+    if (!track) return;
+    $("trackTitle").textContent = track.name;
+    $("trackArtist").textContent = track.artist;
+    $("coverImg").src = track.cover || "icon.png";
+  }
+
+  async function pollCurrentPlayback() {
+    if (!state.accessToken) return;
+    try {
+      const data = await spFetch("/me/player/currently-playing");
+      if (data?.item) {
+        const t = simplifyTrack(data.item);
+        state.currentTrack = t;
+        updateNowPlayingUI(t);
+      }
+    } catch (_) {}
+  }
+
+  // === ИНТЕГРАЦИЯ С GEMINI API (ПОДДЕРЖКА КЛЮЧЕЙ AQ.Ab8... И AIzaSy...) ===
+  async function callGemini(promptText, systemInstruction = "") {
+    const key = (state.geminiKey || "").trim();
+    if (!key) {
+      throw new Error("Не указан Gemini API Key. Открой кнопку API в правом верхнем углу и вставь ключ.");
+    }
+
+    const payload = {
+      contents: [{ role: "user", parts: [{ text: promptText }] }],
+      generationConfig: {
+        temperature: 0.7
+      }
+    };
+    if (systemInstruction) {
+      payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+    }
+
+    // Передаём ключ в официальном заголовке x-goog-api-key — это работает и для новых ключей AQ.Ab8..., и для AIzaSy...
+    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": key
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = data?.error?.message || `HTTP ${res.status}`;
+      if (msg.toLowerCase().includes("location") || res.status === 400 && msg.toLowerCase().includes("supported")) {
+        throw new Error(`Регион заблокирован Google (${msg}). Включи VPN через США или Европу.`);
+      }
+      throw new Error(`Ошибка Gemini (${res.status}): ${msg}`);
+    }
+
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!reply) throw new Error("Gemini вернул пустой ответ.");
+    return reply;
+  }
+
+  // === ОБРАБОТКА КОМАНД ЧАТА ДИДЖЕЯ ===
+  async function handleDjChat(userText) {
+    addChatMessage(userText, "user");
+
+    const sampleArtists = Array.from(new Set(state.libraryTracks.map(t => t.artist))).slice(0, 15).join(", ");
+
+    const systemPrompt = `Ты — умный музыкальный AI DJ для Spotify. Отвечай живо, кратко и по делу на русском языке.
+Твоя задача — понять запрос пользователя и вернуть СТРОГО валидный JSON без markdown-обёрток.
+Формат JSON:
+{
+  "dj_reply": "короткая живая реплика диджея пользователю",
+  "mode_label": "название режима для бейджа (например: Сет Paledusk + Микс)",
+  "requests": [
+    { "query": "поисковый запрос для Spotify (например: artist:Paledusk или конкретный трек/жанр)", "count": 3 }
+  ],
+  "fill_with_library": true
+}
+Правила:
+1. Если пользователь просит конкретное число треков исполнителя (например: "Включи 3 трека Paledusk, а дальше как обычно"), создай элемент в requests с query: "Paledusk" и count: 3, а fill_with_library поставь true (чтобы после 3 треков Paledusk играла привычная музыка пользователя).
+2. Если пользователь просит настроение/жанр ("бодрый японский рок"), сформируй 2-3 точных поисковых запроса и поставь fill_with_library: false или true по смыслу.
+3. Известные артисты из медиатеки пользователя: ${sampleArtists || "не загружены"}.`;
+
+    try {
+      const raw = await callGemini(userText, systemPrompt);
+      const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+      const plan = JSON.parse(cleaned);
+
+      let newQueue = [];
+      if (Array.isArray(plan.requests)) {
+        for (const req of plan.requests) {
+          const count = Math.min(Math.max(Number(req.count) || 3, 1), 10);
+          const found = await searchSpotifyTracks(req.query, count);
+          newQueue.push(...found.slice(0, count));
         }
+      }
+
+      if (plan.fill_with_library !== false && state.libraryTracks.length) {
+        const usedIds = new Set(newQueue.map(t => t.id));
+        const extra = [...state.libraryTracks]
+          .filter(t => !usedIds.has(t.id))
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 6);
+        newQueue.push(...extra);
+      }
+
+      if (!newQueue.length) {
+        buildDefaultQueue(8);
       } else {
-        document.getElementById('djMoodLabel').textContent = 'Эфир остановлен';
-        await spotifyApi('/me/player/pause', 'PUT');
-        state.isPlaying = false;
-        updatePlayPauseUI();
-      }
-    }
-
-    function updateDjButtonUI() {
-      const btn = document.getElementById('djToggleBtn');
-      const text = document.getElementById('djToggleText');
-      const icon = document.getElementById('djToggleIcon');
-
-      if (state.djActive) {
-        btn.classList.remove('bg-[#1DB954]', 'hover:bg-[#1ed760]', 'text-black');
-        btn.classList.add('bg-[#282828]', 'hover:bg-[#333333]', 'text-white', 'border', 'border-[#1DB954]');
-        text.textContent = 'STOP DJ';
-        icon.innerHTML = '<path d="M6 6h12v12H6z"/>';
-      } else {
-        btn.classList.add('bg-[#1DB954]', 'hover:bg-[#1ed760]', 'text-black');
-        btn.classList.remove('bg-[#282828]', 'hover:bg-[#333333]', 'text-white', 'border', 'border-[#1DB954]');
-        text.textContent = 'START DJ';
-        icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
-      }
-    }
-
-    function setCurrentTrack(track) {
-      if (!track) return;
-      if (state.currentTrack && state.currentTrack.uri !== track.uri) {
-        addToHistory(state.currentTrack);
-      }
-      state.currentTrack = track;
-      state.lastTrackUri = track.uri;
-
-      document.getElementById('npTitle').textContent = track.name;
-      document.getElementById('npArtist').textContent = track.artist;
-      document.getElementById('npNote').textContent = track.reason || '';
-      document.getElementById('infoContextTrack').textContent = `${track.artist} — ${track.name}`;
-
-      const img = document.getElementById('npCover');
-      const ph = document.getElementById('npPlaceholder');
-      if (track.cover) {
-        img.src = track.cover;
-        img.classList.remove('hidden');
-        ph.classList.add('hidden');
-      } else {
-        img.classList.add('hidden');
-        ph.classList.remove('hidden');
-      }
-      updateLikeIcon();
-    }
-
-    function addToHistory(track) {
-      if (!track || !track.uri || track.uri.startsWith('mock:')) return;
-      if (state.history[0]?.uri === track.uri) return;
-      const now = new Date();
-      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      state.history.unshift({ ...track, playedAt: timeStr });
-      if (state.history.length > 30) state.history.pop();
-      renderHistory();
-    }
-
-    async function refillQueue(forceNew = false) {
-      if (forceNew) {
-        state.queue = await generateFreshBatch(5);
+        state.queue = newQueue;
         renderQueue();
-        if (state.djActive && state.currentTrack) {
-          await playQueueOnSpotify([state.currentTrack, ...state.queue]);
-        }
-        return;
-      }
-      const needed = 5 - state.queue.length;
-      if (needed > 0) {
-        const more = await generateFreshBatch(needed);
-        state.queue.push(...more);
-      }
-      state.queue = state.queue.slice(0, 5);
-      renderQueue();
-    }
-
-    async function playFromQueueIndex(idx) {
-      const chosen = state.queue[idx];
-      if (!chosen) return;
-      state.queue.splice(idx, 1);
-      setCurrentTrack(chosen);
-      await refillQueue(false);
-      if (!state.djActive) {
-        state.djActive = true;
-        updateDjButtonUI();
-      }
-      await playQueueOnSpotify([chosen, ...state.queue]);
-    }
-
-    async function removeFromQueue(idx, event) {
-      event.stopPropagation();
-      state.queue.splice(idx, 1);
-      await refillQueue(false);
-    }
-
-    async function togglePlayPause() {
-      if (!state.accessToken) return openSettings();
-      if (state.isPlaying) {
-        await spotifyApi('/me/player/pause', 'PUT');
-        state.isPlaying = false;
-      } else {
-        await spotifyApi('/me/player/play', 'PUT');
-        state.isPlaying = true;
-      }
-      updatePlayPauseUI();
-    }
-
-    async function nextTrack() {
-      if (state.queue.length > 0) {
-        await playFromQueueIndex(0);
-      } else {
-        await spotifyApi('/me/player/next', 'POST');
-        setTimeout(syncPlaybackState, 700);
-      }
-    }
-
-    async function prevTrack() {
-      await spotifyApi('/me/player/previous', 'POST');
-      setTimeout(syncPlaybackState, 700);
-    }
-
-    function updatePlayPauseUI() {
-      const icon = document.getElementById('playPauseIcon');
-      if (state.isPlaying) {
-        icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
-      } else {
-        icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
-      }
-    }
-
-    async function toggleLikeCurrent() {
-      if (!state.currentTrack?.id || !state.accessToken) return;
-      const id = state.currentTrack.id;
-      const uri = state.currentTrack.uri;
-      if (state.likedUris.has(uri)) {
-        await spotifyApi(`/me/tracks?ids=${id}`, 'DELETE');
-        state.likedUris.delete(uri);
-      } else {
-        await spotifyApi(`/me/tracks?ids=${id}`, 'PUT');
-        state.likedUris.add(uri);
-      }
-      updateLikeIcon();
-    }
-
-    function updateLikeIcon() {
-      const icon = document.getElementById('likeIcon');
-      const liked = state.currentTrack && state.likedUris.has(state.currentTrack.uri);
-      if (liked) {
-        icon.setAttribute('fill', '#1DB954');
-        icon.setAttribute('stroke', '#1DB954');
-      } else {
-        icon.setAttribute('fill', 'none');
-        icon.setAttribute('stroke', 'currentColor');
-      }
-    }
-
-    function formatTime(ms) {
-      const sec = Math.floor((ms || 0) / 1000);
-      const m = Math.floor(sec / 60);
-      const s = sec % 60;
-      return `${m}:${String(s).padStart(2, '0')}`;
-    }
-
-    async function syncPlaybackState() {
-      if (!state.accessToken) return;
-      const data = await spotifyApi('/me/player');
-      if (!data || !data.item) return;
-
-      state.isPlaying = Boolean(data.is_playing);
-      updatePlayPauseUI();
-
-      const liveTrack = formatSpotifyTrack(data.item, state.currentTrack?.uri === data.item.uri ? state.currentTrack.reason : 'Spotify Connect');
-
-      if (state.lastTrackUri && state.lastTrackUri !== liveTrack.uri) {
-        const qIdx = state.queue.findIndex(t => t.uri === liveTrack.uri);
-        if (qIdx !== -1) {
-          state.queue.splice(qIdx, 1);
-          await refillQueue(false);
-        }
-        setCurrentTrack(liveTrack);
-      } else if (!state.currentTrack) {
-        setCurrentTrack(liveTrack);
       }
 
-      const progress = data.progress_ms || 0;
-      const duration = data.item.duration_ms || 1;
-      const pct = Math.min(100, Math.round((progress / duration) * 100));
-      document.getElementById('progressBar').style.width = `${pct}%`;
-      document.getElementById('timeElapsed').textContent = formatTime(progress);
-      document.getElementById('timeTotal').textContent = formatTime(duration);
-    }
+      $("djModeBadge").textContent = `Режим: ${plan.mode_label || "AI Сет"}`;
+      addChatMessage(plan.dj_reply || "Обновил очередь под твой запрос!", "dj");
 
-    function sendQuickPrompt(text) {
-      document.getElementById('chatInput').value = text;
-      handleChatSubmit(new Event('submit'));
-    }
-
-    async function handleChatSubmit(e) {
-      e.preventDefault();
-      const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
-
-      addChatMessage('user', text);
-
-      if (!state.accessToken) {
-        addChatMessage('dj', 'Сначала подключи Spotify Client ID через кнопку «API» в правом верхнем углу.');
-        return;
+      if (state.queue.length) {
+        await playQueueFromStart();
       }
+    } catch (err) {
+      // Показываем реальную ошибку в чате, чтобы было понятно, что именно пошло не так
+      addChatMessage(`⚠️ ${err.message}`, "err");
 
-      if (state.geminiKey) {
-        const handledByGemini = await processCommandWithGemini(text);
-        if (handledByGemini) return;
-      }
+      // Умный локальный фолбэк: если пользователь просил конкретного артиста ("3 трека Paledusk")
+      const match = userText.match(/(?:(\d+)\s*(?:трек\w*|пес\w*)?\s+)?(?:включи|поставь|сыграй)?\s*(?:(\d+)\s*(?:трек\w*|пес\w*)?\s+)?([a-zA-Zа-яА-Я0-9\s\-&]+?)(?:,|\s+а\s+дальше|$)/i);
+      const count = Number(match?.[1] || match?.[2] || 3);
+      const artistQuery = (match?.[3] || "").trim();
 
-      await processCommandLocally(text);
-    }
-
-    async function processCommandLocally(text) {
-      const lower = text.toLowerCase();
-
-      const countArtistMatch = text.match(/(?:поставь|включи|добавь|дай|сыграй)\s+(\d+)\s+(?:трек\w*|пес\w*)\s+(?:группы|исполнителя|артиста)?\s*(.+)/i);
-      if (countArtistMatch) {
-        const count = Math.min(5, Math.max(1, parseInt(countArtistMatch[1], 10)));
-        const artistQuery = countArtistMatch[2].replace(/[?.!]+$/, '').trim();
-        addChatMessage('dj', `Ищу ${count} трек(а) ${artistQuery} в Spotify...`);
-
-        const tracks = await fetchArtistTracks(artistQuery, count, false);
-        if (!tracks.length) {
-          addChatMessage('dj', `Не нашёл треки «${artistQuery}» в Spotify. Проверь написание названия.`);
-          return;
-        }
-
-        const filler = await generateFreshBatch(Math.max(0, 5 - tracks.length));
-        const newFirst = tracks[0];
-        state.queue = [...tracks.slice(1), ...filler].slice(0, 5);
-        setCurrentTrack(newFirst);
-        renderQueue();
-        state.djActive = true;
-        updateDjButtonUI();
-        await playQueueOnSpotify([newFirst, ...state.queue]);
-        addChatMessage('dj', `Поставил ${tracks.length} трек(а) ${newFirst.artist}. Первым играет «${newFirst.name}».`);
-        return;
-      }
-
-      const specificTrackMatch = text.match(/(?:включи|поставь|найди|сыграй)\s+(?:трек|песню)\s+(.+)/i);
-      if (specificTrackMatch) {
-        const query = specificTrackMatch[1].replace(/[?.!]+$/, '').trim();
-        const items = await searchSpotifyTracks(query, 3, false);
-        if (!items.length) {
-          addChatMessage('dj', `Трек «${query}» не найден.`);
-          return;
-        }
-        const chosen = formatSpotifyTrack(items[0], 'По твоему запросу');
-        setCurrentTrack(chosen);
-        await refillQueue(false);
-        state.djActive = true;
-        updateDjButtonUI();
-        await playQueueOnSpotify([chosen, ...state.queue]);
-        addChatMessage('dj', `Запускаю: ${chosen.artist} — «${chosen.name}».`);
-        return;
-      }
-
-      if (lower.includes('спокойн') || lower.includes('работ') || lower.includes('фокус') || lower.includes('чилл') || lower.includes('инструментал')) {
-        state.vibeMode = 'work';
-        document.getElementById('djVibeSummary').textContent = 'Фокус и работа · Инструментал · Инди';
-        await refillQueue(true);
-        if (state.queue.length > 0) await playFromQueueIndex(0);
-        addChatMessage('dj', 'Переключил эфир на спокойный рабочий режим: kensuke ushio, toe, the pillows, RADWIMPS.');
-        return;
-      }
-
-      if (lower.includes('тяжел') || lower.includes('тяжёл') || lower.includes('метал') || lower.includes('драйв') || lower.includes('бодр')) {
-        state.vibeMode = 'heavy';
-        document.getElementById('djVibeSummary').textContent = 'Тяжёлый драйв · Пост-хардкор · J-Rock';
-        await refillQueue(true);
-        if (state.queue.length > 0) await playFromQueueIndex(0);
-        addChatMessage('dj', 'Добавил плотного звука и драйва: Ling tosite sigure, Bring Me The Horizon, MAXIMUM THE HORMONE.');
-        return;
-      }
-
-      const cleanedQuery = text.replace(/^(поставь|включи|дай|хочу|добавь|что-нибудь|похожее на|в духе)\s+/i, '').replace(/[?.!]+$/, '').trim();
-      if (cleanedQuery.length >= 2) {
-        const items = await searchSpotifyTracks(cleanedQuery, 8, true);
-        if (items.length > 0) {
-          const formatted = pickRandom(items, 3).map(t => formatSpotifyTrack(t, `Запрос: ${cleanedQuery}`));
-          const filler = await generateFreshBatch(5 - formatted.length);
-          const first = formatted[0];
-          state.queue = [...formatted.slice(1), ...filler].slice(0, 5);
-          setCurrentTrack(first);
-          renderQueue();
-          state.djActive = true;
-          updateDjButtonUI();
-          await playQueueOnSpotify([first, ...state.queue]);
-          addChatMessage('dj', `Обновил сет по запросу «${cleanedQuery}». Сейчас играет ${first.artist} — «${first.name}».`);
-          return;
-        }
-      }
-
-      addChatMessage('dj', 'Не совсем понял запрос. Попробуй написать так: «поставь 3 трека Ado», «сделай спокойнее для работы» или «включи трек Otonoke».');
-    }
-
-    async function processCommandWithGemini(userText) {
-      try {
-        const prompt = `Ты AI DJ в Spotify. Вкус пользователя: Ado, Creepy Nuts, MASS OF THE FERMENTING DREGS, the pillows, Ling tosite sigure, J-Rock, математический рок, японское инди, металкор.
-Пользователь написал: "${userText}".
-Верни ТОЛЬКО валидный JSON без markdown-обёртки в формате:
-{"reply": "короткий ответ диджея на русском", "queries": ["поисковый запрос 1 для Spotify", "запрос 2", "запрос 3"], "vibe": "balanced|work|heavy"}
-Если пользователь просит N треков конкретной группы, укажи в queries N раз название этой группы (например ["artist:Ling tosite sigure", "artist:Ling tosite sigure", "artist:Ling tosite sigure"]).`;
-
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${state.geminiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        const data = await res.json();
-        const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const jsonStr = raw.replace(/```json|```/g, '').trim();
-        const parsed = JSON.parse(jsonStr);
-
-        if (parsed.vibe) state.vibeMode = parsed.vibe;
-        const foundTracks = [];
-        const used = new Set();
-
-        for (const q of (parsed.queries || [])) {
-          const items = await searchSpotifyTracks(q, 6, true);
-          const fresh = items.find(t => !used.has(t.uri));
-          if (fresh) {
-            used.add(fresh.uri);
-            foundTracks.push(formatSpotifyTrack(fresh, 'AI DJ'));
-          }
-        }
-
-        if (foundTracks.length > 0) {
-          const filler = await generateFreshBatch(Math.max(0, 5 - foundTracks.length));
-          const first = foundTracks[0];
-          state.queue = [...foundTracks.slice(1), ...filler].slice(0, 5);
-          setCurrentTrack(first);
-          renderQueue();
-          state.djActive = true;
-          updateDjButtonUI();
-          await playQueueOnSpotify([first, ...state.queue]);
-          addChatMessage('dj', parsed.reply || `Запускаю ${first.artist} — «${first.name}».`);
-          return true;
-        }
-      } catch (e) {
-        console.warn('Gemini fallback to local parser:', e);
-      }
-      return false;
-    }
-
-    function addChatMessage(sender, text) {
-      const box = document.getElementById('chatMessages');
-      const div = document.createElement('div');
-      if (sender === 'user') {
-        div.className = 'bg-[#1DB954] text-black font-medium rounded-lg p-3 text-xs ml-8';
-      } else {
-        div.className = 'bg-[#181818] text-[#E5E5E5] rounded-lg p-3 text-xs mr-6 leading-relaxed';
-      }
-      div.textContent = text;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function askAboutCurrentTrack() {
-      switchTab('info');
-      askCurrentInfoAuto();
-    }
-
-    function askCurrentInfoAuto() {
-      if (!state.currentTrack) return;
-      const q = `Расскажи кратко о треке «${state.currentTrack.name}» и исполнителе ${state.currentTrack.artist}`;
-      document.getElementById('infoInput').value = q;
-      handleInfoSubmit(new Event('submit'));
-    }
-
-    async function handleInfoSubmit(e) {
-      e.preventDefault();
-      const input = document.getElementById('infoInput');
-      const question = input.value.trim();
-      if (!question) return;
-      input.value = '';
-
-      addInfoMessage('user', question);
-
-      if (state.geminiKey) {
+      if (artistQuery && artistQuery.length >= 2 && state.accessToken) {
         try {
-          const ctx = state.currentTrack ? `Текущий трек: ${state.currentTrack.artist} — ${state.currentTrack.name} (альбом: ${state.currentTrack.album}). ` : '';
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${state.geminiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: `${ctx}Ответь кратко, по делу и на русском языке на вопрос пользователя: ${question}` }] }]
-            })
-          });
-          const data = await res.json();
-          const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (answer) {
-            addInfoMessage('ai', answer);
-            return;
+          const found = await searchSpotifyTracks(artistQuery, count);
+          if (found.length) {
+            const extra = state.libraryTracks.sort(() => Math.random() - 0.5).slice(0, 5);
+            state.queue = [...found.slice(0, count), ...extra];
+            renderQueue();
+            addChatMessage(`Резервный поиск: нашёл ${found.slice(0, count).length} трек(а) по запросу «${artistQuery}» и добавил твой микс дальше.`, "dj");
+            await playQueueFromStart();
           }
-        } catch (err) {
-          console.warn(err);
-        }
+        } catch (_) {}
       }
-
-      const artist = state.currentTrack?.artist?.split(',')[0]?.trim() || question;
-      try {
-        const wikiRes = await fetch(`https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(artist)}`);
-        if (wikiRes.ok) {
-          const wiki = await wikiRes.json();
-          if (wiki.extract) {
-            addInfoMessage('ai', `${wiki.extract}\n\n(Чтобы получать разборы конкретных песен и отвечать на любые вопросы, добавь бесплатный Gemini API Key в меню API.)`);
-            return;
-          }
-        }
-      } catch (err) {}
-
-      addInfoMessage('ai', 'Для свободных ответов о треках и текстах песен укажи бесплатный Gemini API Key в настройках (кнопка «API» в правом верхнем углу).');
     }
+  }
 
-    function addInfoMessage(sender, text) {
-      const box = document.getElementById('infoMessages');
-      const div = document.createElement('div');
-      if (sender === 'user') {
-        div.className = 'bg-[#282828] text-white font-medium rounded-lg p-3 text-xs ml-8';
-      } else {
-        div.className = 'bg-[#181818] text-[#E5E5E5] rounded-lg p-3 text-xs mr-4 leading-relaxed whitespace-pre-line';
-      }
-      div.textContent = text;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
+  // === СПРАВКА О ТЕКУЩЕМ ТРЕКЕ ===
+  async function explainCurrentTrack() {
+    if (!state.currentTrack) {
+      $("aboutContent").textContent = "Сейчас ничего не играет. Запустите трек, чтобы узнать о нём.";
+      return;
     }
-
-    function renderQueue() {
-      const list = document.getElementById('queueList');
-      if (!state.queue.length) {
-        list.innerHTML = '<div class="text-xs text-[#B3B3B3] py-3 text-center">Очередь пуста. Нажмите «Обновить»</div>';
-        return;
-      }
-
-      list.innerHTML = state.queue.map((t, idx) => `
-        <div onclick="playFromQueueIndex(${idx})" class="spotify-row p-2 flex items-center gap-3 cursor-pointer">
-          <span class="text-xs text-[#B3B3B3] w-4 text-center font-medium">${idx + 1}</span>
-          <div class="w-10 h-10 rounded bg-[#282828] shrink-0 overflow-hidden">
-            ${t.cover ? `<img src="${t.cover}" class="w-full h-full object-cover" />` : ''}
-          </div>
-          <div class="min-w-0 flex-1">
-            <div class="text-xs font-semibold text-white truncate">${escapeHtml(t.name)}</div>
-            <div class="text-[11px] text-[#B3B3B3] truncate">${escapeHtml(t.artist)}</div>
-          </div>
-          <button onclick="removeFromQueue(${idx}, event)" class="p-1.5 text-[#B3B3B3] hover:text-white text-xs" title="Убрать">✕</button>
-        </div>
-      `).join('');
+    $("aboutContent").textContent = "Диджей готовит справку о треке...";
+    try {
+      const prompt = `Расскажи интересно и кратко (3-4 предложения на русском) как музыкальный радиоведущий о треке "${state.currentTrack.name}" исполнителя ${state.currentTrack.artist} (альбом "${state.currentTrack.album}"). Упомяни стиль, атмосферу и интересный факт о группе.`;
+      const reply = await callGemini(prompt);
+      $("aboutContent").textContent = reply;
+    } catch (e) {
+      $("aboutContent").textContent = `Ошибка: ${e.message}`;
     }
+  }
 
-    function renderHistory() {
-      const list = document.getElementById('historyList');
-      document.getElementById('historyCount').textContent = String(state.history.length);
-      if (!state.history.length) return;
-
-      list.innerHTML = state.history.map((t) => `
-        <div class="spotify-row p-2 flex items-center gap-3">
-          <div class="w-9 h-9 rounded bg-[#282828] shrink-0 overflow-hidden">
-            ${t.cover ? `<img src="${t.cover}" class="w-full h-full object-cover" />` : ''}
-          </div>
-          <div class="min-w-0 flex-1">
-            <div class="text-xs font-medium text-white truncate">${escapeHtml(t.name)}</div>
-            <div class="text-[11px] text-[#B3B3B3] truncate">${escapeHtml(t.artist)}</div>
-          </div>
-          <span class="text-[10px] text-[#B3B3B3] shrink-0">${t.playedAt || ''}</span>
-        </div>
-      `).join('');
-    }
-
-    function escapeHtml(str) {
-      return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-    }
-
-    function switchTab(tab) {
-      ['air', 'chat', 'info'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
-        const nav = document.getElementById(`nav-${t}`);
-        nav.classList.toggle('text-white', t === tab);
-        nav.classList.toggle('text-[#B3B3B3]', t !== tab);
+  // === СОБЫТИЯ UI ===
+  document.querySelectorAll(".tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const target = btn.dataset.tab;
+      ["chat", "queue", "about"].forEach(t => {
+        $(`tab-${t}`).classList.toggle("hidden", t !== target);
       });
-    }
+    });
+  });
 
-    function openSettings() {
-      document.getElementById('redirectUriInput').value = CLEAN_REDIRECT_URI;
-      document.getElementById('clientIdInput').value = state.clientId;
-      document.getElementById('geminiKeyInput').value = state.geminiKey;
-      document.getElementById('settingsModal').classList.remove('hidden');
-    }
+  $("openApiBtn").addEventListener("click", () => $("apiModal").classList.add("open"));
+  $("closeApiBtn").addEventListener("click", () => $("apiModal").classList.remove("open"));
 
-    function closeSettings() {
-      document.getElementById('settingsModal').classList.add('hidden');
-    }
+  $("saveOnlyBtn").addEventListener("click", () => {
+    state.spotifyClientId = $("spotifyClientIdInput").value.trim();
+    state.geminiKey = $("geminiKeyInput").value.trim();
+    localStorage.setItem("sp_client_id", state.spotifyClientId);
+    localStorage.setItem("gemini_api_key", state.geminiKey);
+    $("apiModal").classList.remove("open");
+    addChatMessage("Ключи сохранены. Можешь проверять чат!", "dj");
+  });
 
-    function copyRedirectUri() {
-      navigator.clipboard.writeText(CLEAN_REDIRECT_URI);
-    }
+  $("saveAndConnectBtn").addEventListener("click", () => {
+    state.spotifyClientId = $("spotifyClientIdInput").value.trim();
+    state.geminiKey = $("geminiKeyInput").value.trim();
+    localStorage.setItem("sp_client_id", state.spotifyClientId);
+    localStorage.setItem("gemini_api_key", state.geminiKey);
+    loginSpotify();
+  });
 
-    function saveOnlyKeys() {
-      state.clientId = document.getElementById('clientIdInput').value.trim();
-      state.geminiKey = document.getElementById('geminiKeyInput').value.trim();
-      localStorage.setItem('sp_client_id', state.clientId);
-      localStorage.setItem('gemini_api_key', state.geminiKey);
-      closeSettings();
+  $("startDjBtn").addEventListener("click", () => playQueueFromStart());
+  $("pauseBtn").addEventListener("click", async () => {
+    try {
+      const pb = await spFetch("/me/player");
+      if (pb?.is_playing) await spFetch("/me/player/pause", { method: "PUT" });
+      else await spFetch("/me/player/play", { method: "PUT" });
+    } catch (e) {
+      addChatMessage(`⚠️ ${e.message}`, "err");
     }
-
-    function saveAndConnectSpotify() {
-      saveOnlyKeys();
-      startSpotifyAuth();
+  });
+  $("nextBtn").addEventListener("click", async () => {
+    try {
+      await spFetch("/me/player/next", { method: "POST" });
+      setTimeout(pollCurrentPlayback, 800);
+    } catch (e) {
+      addChatMessage(`⚠️ ${e.message}`, "err");
     }
+  });
 
-    function updateConnectionUI() {
-      const dot = document.getElementById('statusDot');
-      const text = document.getElementById('statusText');
+  $("syncBtn").addEventListener("click", async () => {
+    await syncLibrary();
+    addChatMessage(`Медиатека обновлена: загружено ${state.libraryTracks.length} треков.`, "dj");
+  });
+
+  $("refreshQueueBtn").addEventListener("click", () => buildDefaultQueue(8));
+  $("explainTrackBtn").addEventListener("click", explainCurrentTrack);
+
+  $("sendChatBtn").addEventListener("click", () => {
+    const val = $("chatInput").value.trim();
+    if (!val) return;
+    $("chatInput").value = "";
+    handleDjChat(val);
+  });
+
+  $("chatInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") $("sendChatBtn").click();
+  });
+
+  // === ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ===
+  (async () => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (code) {
+      await exchangeCodeForToken(code);
+    } else {
+      updateStatusDot();
       if (state.accessToken) {
-        dot.classList.remove('bg-[#535353]');
-        dot.classList.add('bg-[#1DB954]');
-        text.textContent = 'Spotify подключён';
-      } else {
-        dot.classList.add('bg-[#535353]');
-        dot.classList.remove('bg-[#1DB954]');
-        text.textContent = 'Не подключено';
+        if (!state.libraryTracks.length) await syncLibrary();
+        else buildDefaultQueue(8);
+        pollCurrentPlayback();
       }
     }
-
-    (async function init() {
-      await handleAuthCallback();
-      updateConnectionUI();
-
-      if (state.accessToken) {
-        await refreshDevices();
-        await syncPlaybackState();
-        state.queue = await generateFreshBatch(5);
-        renderQueue();
-        setInterval(syncPlaybackState, 4000);
-      } else {
-        state.queue = getFallbackMockBatch(1);
-        renderQueue();
-      }
-    })();
-  </script>
+    setInterval(pollCurrentPlayback, 10000);
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    }
+  })();
+})();
+</script>
 </body>
 </html>
+
