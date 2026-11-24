@@ -293,6 +293,12 @@
   </div>
 
   <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
+      });
+    }
+
     const USER_TASTE_POOL = [
       "Ado", "Creepy Nuts", "MASS OF THE FERMENTING DREGS", "the pillows",
       "Ling tosite sigure", "TK from Ling tosite sigure", "Sayuri", "(K)NoW_NAME",
